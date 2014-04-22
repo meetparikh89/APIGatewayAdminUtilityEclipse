@@ -1,84 +1,89 @@
-// AdminUtilityApp.controller('CreateClientController',
-// 		function($scope,$http) {
-// 			$scope.createClient = function() {
-// 				if($scope.createclient_name == undefined || $scope.createclient_name == ''){
-// 					$scope.createclient_message = "Please enter client name.";
-// 				} else {
-// 					$http({
-// 		        	    method: 'PUT',
-// 		        	    url: 'admin/client/' + $scope.createclient_name,
-// 		        	})
-// 		        	.success(function(data){
-// 		        		$scope.createclient_message = "Client " + $scope.createclient_name + " created.";
-// 		        	})
-// 		        	.error(function(data){
-// 		        		$scope.createclient_message = data.error_description;
-// 		        	});
-// 				}
-// 			};
-// });
-AdminUtilityApp
-		.controller(
-				'CreateClientController',
-				function($scope, $http, $location, ConfirmationDataFactory) {
-					
-					$scope.IPranges = [ {
-						'id' : "IP1"
-					} ];
-					
-					$scope.addNewIPRange = function() {
-						var newItemNo = $scope.IPranges[$scope.IPranges.length - 1].id + 1;
-						$scope.IPranges.push({
-							'id' : 'IP' + newItemNo,
-						});
-					};
+<!-- <div class="jumbotron text-center">
 
-					$scope.AddIPRange = function(IPrange) {
-						return IPrange.id === $scope.IPranges[$scope.IPranges.length - 1].id;
-					};
+<form name="createClientform" novalidate id="createClientform">
+	<label>Enter Client Name : </label>
+	<input type="text" name="clientName" ng-model="createclient_name">
+	<button class="btn-primary" ng-click="createClient()" style="background-color:#191970">Create it !!</button>
+</form>
 
-					$scope.DeleteIPRange = function(IPRange) {
-						$scope.IPranges.splice(IPRange, 1);
-					};
+<div ng-bind="createclient_message"></div>
 
-					$scope.Delete = function(IPrange) {
-						return !(IPrange.id === $scope.IPranges[$scope.IPranges.length - 1].id);
-					};
+</div> -->
 
-					// $scope.checkClient = function() {
-					// 	$http({
-					// 		method : 'GET',
-					// 		url : 'admin/client/' + $scope.clientName
-					// 	}).success(function(data) {
-					// 		alert("Client is Already Present");
-					// 		$scope.name = "";
-					// 	}).error(function(data) {
-					// 		console.log('error');
+<div class="jumbotron text-center">
+	<table>
+		<tr style="text-align: left;">
+			<td><label>Client Name : </label></td>
+			<td><input type="text" ng-model="clientName"></td>
+		</tr>
+		<tr style="text-align: left;">
+			<td>
+				<fieldset>
+					<legend>
+						<input type="checkbox" ng-model="PasswordCheckBox" /> <label
+							style="font-style: normal; font-weight: normal; padding-left: 15px">Password</label>
+					</legend>
+				</fieldset>
+			</td>
+		</tr>
+		<tr style="text-align: left; padding-left: 15px">
+			<td><label>Password : </label></td>
+			<td><input type="password" ng-model="password"
+				ng-disabled="!PasswordCheckBox"></td>
+			<td></td>
+		</tr>
+		<tr style="text-align: left; padding-left: 15px">
+			<td><label>Confirm Password : </label></td>
+			<td><input type="password" name="confirmpassword"
+				ng-model="confirmpassword" ng-disabled="!PasswordCheckBox"></td>
+			<td></td>
+		</tr>
+		<tr style="text-align: left; padding-left: 15px">
+			<td><label>Validity </label></td>
+			<td><select id='validityCombo' ng-disabled="!PasswordCheckBox">
+					<option value='0'></option>
+					<option value='D'>Days</option>
+					<option value='M'>Months</option>
+					<option value='Y'>Years</option>
+			</select> <input type="text" ng-model="validityPeriod"
+				ng-disabled="!PasswordCheckBox" ng-value="validity.value"></td>
+			<td></td>
+		</tr>
+		<tr style="text-align: left; padding-left: 15px">
+			<th colspan="3">
+				<fieldset>
+					<legend>
+						<div>
+							<input type="checkbox" ng-model="IPRangeCheckBox" /> <label
+								style="font-style: normal; font-weight: normal; padding-left: 15px">IP
+								Ranges</label>
+							</td>
+						</div>
+					</legend>
+					<fieldset ng-disabled="!IPRangeCheckBox">
+						<div class="form-group" data-ng-repeat="IPrange in IPranges">
+							<input type="text" ng-model="IPrange.name" size="15" /> <input
+								type="text" ng-model="IPrange.from" size="8" /> <input
+								type="text" ng-model="IPrange.to" size="8" /> <img
+								ng-model="imgRemove" src="img/delete.png"
+								ng-show="Delete(IPrange)" ng-click="DeleteIPRange()"
+								title="Remove" ng-disabled="!IPRangeCheckBox" /> <img
+								ng-model="imgAdd" src="img/add.png"
+								ng-show="AddIPRange(IPrange)" ng-click="addNewIPRange(IPrange)"
+								title="Add" ng-disabled="!IPRangeCheckBox" />
+						</div>
+					</fieldset>
+				</fieldset>
+			</th>
+		</tr>
+		<tr>
+			<td>
+				<button class="btn-primary"
+					ng-click="createClient(PasswordCheckBox,IPRangeCheckBox)">Create
+					it !!</button>
+			</td>
+		<tr>
+	</table>
+</div>
 
-					// 	});
-					// };
-					$scope.createClient = function() {
-						var addArray = [];
-						console.log("IPRangeCheckBox" + $scope.IPRangeCheckBox);
-						if ($scope.IPRangeCheckBox) {
 
-							for (var i = 0; i < $scope.IPranges.length; i++) {
-								addArray.push($scope.IPranges[i]);
-
-							}
-						}
-						console.log("Adding elements " + addArray);
-						var validity = document.getElementById("validityCombo");
-						var timeSpan = $scope.validityPeriod;
-						ConfirmationDataFactory.setAddValidityPeriod(timeSpan);
-
-						var timeUnit = validity.value;
-						ConfirmationDataFactory.setAddValidityUnit(timeUnit);
-						ConfirmationDataFactory.setClientName($scope.clientName.toLowerCase());
-						ConfirmationDataFactory.setPassword($scope.password);
-						ConfirmationDataFactory.setAddIPRanges(addArray);
-						ConfirmationDataFactory.setAllIPRanges(addArray);
-						ConfirmationDataFactory.setUpdateRequest(false);
-						$location.path("/confirmationPage");
-					};
-				});
