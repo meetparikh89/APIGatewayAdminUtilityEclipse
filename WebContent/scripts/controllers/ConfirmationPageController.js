@@ -1,9 +1,8 @@
 AdminUtilityApp
 		.controller(
 				'ConfirmationPageController',
-				function($scope, $location,$http, ConfirmationDataFactory) {
+				function($scope, $http, ConfirmationDataFactory) {
 					console.log('Called the Confirmation Page Controller');
-					$scope.submitMessage='';
 					$scope.clientName = ConfirmationDataFactory.getClientName();
 					$scope.validityTimeSpan = ConfirmationDataFactory
 							.getValidityPeriod();
@@ -43,22 +42,19 @@ AdminUtilityApp
 					};
 
 					$scope.submit = function() {
-						
-
+						console.log("Is Update"+ConfirmationDataFactory.getUpdateRequest());
 						if (!ConfirmationDataFactory.getUpdateRequest()) {
 							$http({
 								method : 'PUT',
 								url : 'admin/client/' + $scope.clientName,
 							})
-									.success(
-											function(data) {
-												console.log('Client is created');
-												$scope.submitMessage=$scope.submitMessage+"Client is created";
-												if ((password != '' && password != undefined && password != null)) {
-													console
-															.log("Inside Password request");
-													$http(
-															{
+							.success(
+								function(data) {
+									var errorFoundInCred = false;
+									var errorFoundInIP = false;
+									if (!(password == '' || password === undefined || password == null)) {
+										console.log("Inside Password request");
+									$http({
 																method : 'POST',
 																url : 'admin/client/'
 																		+ $scope.clientName
@@ -68,71 +64,67 @@ AdminUtilityApp
 																	"validity_period" : validityValue
 																}
 															})
-															.success(
-																	function(
-																			data) {
-																		console
-																				.log("Post password Successfully");
-																		$scope.clientName = $scope.name;
-																		$scope.submitMessage=$scope.submitMessage+" Password is Updated";
-
-																	})
 															.error(
-																	function(
-																			data,
-																			status) {
-																		console
-																				.log("Post password failed");
-																		$scope.submitMessage=$scope.submitMessage+" But, Password Updation fails";
+																	function(data) {
+																		errorFoundInCred = true;
 																	});
 												}
-												for(var i=0;i<$scope.addIPRanges.length;i++) {
-													
+												for (var i = 0; i < $scope.addIPRanges.length; i++) {
+
 													console
-															.log(" Inside Iprange");
-													$http(
-															{
+.log(" Inside Iprange");
+$http(
+{
 																method : 'PUT',
 																url : 'admin/client/'
 																		+ $scope.clientName
-																		+ '/iprange/'+$scope.addIPRanges[i].name,
+																		+ '/iprange/'
+																		+ $scope.addIPRanges[i].name,
 																data : {
 																	"from" : $scope.addIPRanges[i].from,
 																	"to" : $scope.addIPRanges[i].to
 																}
 															})
-															.success(
-																	function(
-																			data) {
-																		console
-																				.log("Ip added Successfully");
-																		console
-																				.log(JSON
-																						.stringify(data));
-																	})
 															.error(
-																	function(
-																			data) {
-																		console
-																				.log('error');
+																	function(data) {
+																		errorFoundInIP = true;
 																	});
+												}
+
+												if(errorFoundInIP == false && errorFoundInCred ==false ){
+													$scope.confirmation_message = 'Successfully created user.';
+												} else {
+													var error_scenarios;
+													if(errorFoundInCred == true && errorFoundInIP == false) {
+														error_scenarios = 'Credentials.';
+													}
+													if(errorFoundInCred == false && errorFoundInIP == true){
+														error_scenarios = 'IP Ranges.';
+													}
+													if(errorFoundInCred == true && errorFoundInIP == true){
+														error_scenarios = 'credentials and IP Ranges.';
+													}
+													$scope.confirmation_message = 'User created but unable to set ' + error_scenarios;
 												}
 
 											})
 
 									.error(
 											function(data) {
-												$scope.createclient_message = data.error_description;
+												console.log(data.error_description)
+												$scope.confirmation_message = 'Unable to create client.';
 											});
 
 						}
 						;
 
-						if ((password != '' || password != undefined || password !=null)
+//Update Part starts here.
+
+						if ((password != '' || password != undefined || password != null)
 								&& ConfirmationDataFactory.getUpdateRequest()) {
-							console.log("Inside Password request");
-							$http(
-									{
+							console.log("Inside Password request for update");
+$http(
+{
 										method : 'POST',
 										url : 'admin/client/'
 												+ $scope.clientName
@@ -141,28 +133,19 @@ AdminUtilityApp
 											"password" : password,
 											"validity_period" : validityValue
 										}
-									})
-									.success(
-											function(data) {
-												console
-														.log("Added password Successfully");
-												$scope.submitMessage=$scope.submitMessage+" Password is Updated";
-
-											})
-									.error(
-											function(data, status) {
-												console
-														.log("Post password failed");
-												$scope.submitMessage=$scope.submitMessage+" Password Updation fails";
-
-											});
+									}).success(function(data) {
+								console.log("Added password Successfully");
+								alert("Password Updated");
+							}).error(function(data, status) {
+								console.log("Post password failed");
+							});
 						}
 						console.log("Ip " + $scope.IPRangeCheckBox);
 						if (ConfirmationDataFactory.getUpdateRequest()) {
 							console.log(" Inside Iprange");
-							for(var i=0;i<$scope.deleteIPRanges.length;i++){
-								$http(
-										{
+							for (var i = 0; i < $scope.deleteIPRanges.length; i++) {
+$http(
+{
 											method : 'DELETE',
 											url : 'admin/client/'
 													+ $scope.clientName
@@ -176,41 +159,34 @@ AdminUtilityApp
 									console.log('error');
 								});
 							}
-							
-							
-							
-							for(var i=0;i<$scope.addIPRanges.length;i++){
-								
+
+							for (var i = 0; i < $scope.addIPRanges.length; i++) {
+
 								console.log("Adding IP Ranges");
-								var from=$scope.addIPRanges[i].from.toString();
+								var from = $scope.addIPRanges[i].from
+										.toString();
 								var to = $scope.addIPRanges[i].to.toString();
-								var name = $scope.addIPRanges[i].name;								
-								$http(
-									{
-										method : 'PUT',
-										url : 'admin/client/'
-												+ $scope.clientName
-												+ '/iprange/'
-												+ name,
-										data : {
-											"from" : from,
-											"to" : to
-										}
-									}).success(function(data) {
-								console.log("Ip added Successfully");
-								console.log(JSON.stringify(data));
-								$scope.clients = data;
-							}).error(function(data) {
-								console.log('error');
-							});
+								var name = $scope.addIPRanges[i].name;	
+$http(
+{
+											method : 'PUT',
+											url : 'admin/client/'
+													+ $scope.clientName
+													+ '/iprange/' + name,
+											data : {
+												"from" : from,
+												"to" : to
+											}
+										}).success(function(data) {
+									console.log("Ip added Successfully");
+									alert("IP Info Updated");
+									console.log(JSON.stringify(data));
+									$scope.clients = data;
+								}).error(function(data) {
+									console.log('error');
+								});
 							}
-							alert($scope.submitMessage);
 						}
-						else{
-							$scope.submitMessage=$scope.submitMessage+" Updation Failed";
-							alert($scope.submitMessage);
-						}
-						
 					};
-					
+
 				});
