@@ -14,8 +14,8 @@ AdminUtilityApp.controller('NavigatorController', function($scope,$cookies,$root
 		}];
 		
 		$scope.providerOptions = [ {
-			name : "Get Providers",
-			hrefValue:"#getProvider"
+			name : "Manage Provider",
+			hrefValue:"#manageProvider"
 		}, {
 			name : "Create Providers",
 			hrefValue:"#createProvider"
